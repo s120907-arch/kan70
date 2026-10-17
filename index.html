@@ -159,27 +159,29 @@ table.cells th:first-child,table.cells td:first-child{width:23%}
 #pick .btn2{flex:none}
 #pick p{margin:4px 0 0;color:var(--fg-soft);font-size:13px;line-height:1.6}
 #end .rates{display:flex;gap:6px;flex-wrap:wrap}
-.brand{font-family:var(--serif);font-weight:700;letter-spacing:.3em;color:var(--red-soft);font-size:13px}
-#title .brand{font-size:14px;margin-bottom:-4px}
-#splash{background:var(--ink);z-index:12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--fg);opacity:0;animation:splash 2.6s ease forwards}
-#splash .line{width:1px;height:44px;background:var(--red)}
-#splash .brand{font-size:22px;letter-spacing:.4em;text-indent:.4em;color:var(--fg)}
-#splash b{font-family:var(--serif);font-size:16px;letter-spacing:.3em;text-indent:.3em;color:var(--red-soft)}
-#splash small{font-size:11px;color:var(--fg-soft);letter-spacing:.2em;margin-top:18px}
-@keyframes splash{0%{opacity:0}18%{opacity:1}82%{opacity:1}100%{opacity:0}}
+.brand{font-family:var(--serif);font-weight:700;letter-spacing:.3em;color:var(--fg-soft);font-size:13px}
+#title .brandrow{display:flex;align-items:center;gap:10px;margin-bottom:-2px}
+#title .brandrow img{height:44px;width:auto}
+#title .brand{font-size:13px;letter-spacing:.22em;color:var(--fg)}
+#splash{background:#ece2d0;z-index:12;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;animation:splash 2.8s ease forwards}
+#splash img{width:68%;max-width:300px;height:auto;animation:splashLogo 2.8s ease forwards;filter:drop-shadow(0 10px 24px rgba(120,96,40,.18))}
+#splash::before{content:"";position:absolute;width:120vw;height:120vw;max-width:620px;max-height:620px;border-radius:50%;background:radial-gradient(circle,rgba(255,232,150,.55),rgba(236,226,208,0) 62%);animation:splashGlow 2.8s ease forwards}
+@keyframes splashLogo{0%{transform:scale(.9) translateY(6px)}60%{transform:scale(1) translateY(0)}100%{transform:scale(1.02) translateY(-2px)}}
+@keyframes splashGlow{0%{opacity:0;transform:scale(.6)}50%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+#splash small{font-family:var(--serif);font-size:12px;color:#7a6a55;letter-spacing:.35em;text-indent:.35em;margin-top:26px}
+@keyframes splash{0%{opacity:0}16%{opacity:1}84%{opacity:1}100%{opacity:0}}
 #gate{background:rgba(12,9,7,.96);z-index:13;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 30px;color:var(--fg)}
 #gate h3{margin:0;font-family:var(--serif);font-size:24px}
 #gate p{margin:0;font-size:13px;line-height:1.7;color:var(--fg-soft);word-break:keep-all}
 #gate input{font-family:var(--sans);font-size:22px;letter-spacing:.12em;text-transform:uppercase;padding:12px 14px;border:1px solid rgba(255,255,255,.25);border-radius:3px;background:rgba(255,255,255,.06);color:var(--fg);outline:none}
 #gate .msg{min-height:1.4em;font-size:13px;color:var(--red-soft)}
 #gate .btn2{flex:none;align-self:stretch}
-#credits{background:var(--ink);z-index:11;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 30px;color:var(--fg)}
-#credits .brand{font-size:24px;letter-spacing:.4em;text-indent:.4em;color:var(--fg);margin-bottom:2px}
-#credits b{font-family:var(--serif);font-size:17px;letter-spacing:.3em;text-indent:.3em;color:var(--red-soft)}
-#credits .line{width:1px;height:36px;background:var(--red);margin:10px 0}
-#credits p{margin:0;font-size:13px;line-height:1.9;color:var(--fg-soft);word-break:keep-all}
-#credits p em{font-style:normal;color:var(--fg)}
-#credits small{font-size:11px;color:var(--fg-soft);margin-top:26px;opacity:.7}
+#credits{background:#ece2d0;z-index:11;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 30px;color:#3a2f24}
+#credits img{width:62%;max-width:270px;height:auto;margin-bottom:6px}
+#credits .line{width:1px;height:32px;background:#b8a98f;margin:6px 0}
+#credits p{margin:0;font-size:13px;line-height:1.9;color:#6b5b48;word-break:keep-all}
+#credits p em{font-style:normal;color:#3a2f24;font-weight:700}
+#credits small{font-size:11px;color:#8a7a66;margin-top:26px}
 #end .rates span{font-size:12px;color:var(--fg-soft);border:1px solid rgba(255,255,255,.18);border-radius:3px;padding:3px 7px}
 
 /* 첫 화면과 끝 화면 */
@@ -258,12 +260,12 @@ table.cells th:first-child,table.cells td:first-child{width:23%}
     <div class="rates" id="eRates"></div>
     <div class="row"><button class="btn2" id="nextChBtn" type="button">다음 화로</button><button class="btn2 line" id="againBtn" type="button">첫 화면으로</button></div>
   </div>
-  <div id="gate" class="layer" hidden><span class="brand">빛이 있는 국어 · 손유빈</span><h3>접속 코드</h3><p>선생님께 받은 코드를 넣어 줘. 코드 하나는 기기 하나에서만 쓸 수 있어.</p><input id="gateIn" type="text" maxlength="12" placeholder="BIT-XXXXXX" autocomplete="off" autocapitalize="characters"><div class="msg" id="gateMsg"></div><button class="btn2" id="gateBtn" type="button">확인</button></div>
-  <div id="splash" class="layer"><span class="brand">빛이 있는 국어</span><span class="line"></span><b>손유빈</b><small>presents</small></div>
-  <div id="credits" class="layer" hidden><span class="brand">빛이 있는 국어</span><b>손유빈</b><span class="line"></span><p><em>일흔 번째 칸</em> — 성균관 백문백답</p><p>기획 · 대본 · 문항 · 해설<br><em>손유빈 (빛이 있는 국어)</em></p><p>교재 「중세국어 백문백답 70문 70답」</p><p>그림: AI 생성 이미지 · 글꼴: Noto Serif/Sans CJK KR</p><small>화면을 누르면 처음으로 돌아갑니다</small></div>
+  <div id="gate" class="layer" hidden><span class="brand">빛이 있는 국어, 손유빈</span><h3>접속 코드</h3><p>선생님께 받은 코드를 넣어 줘. 코드 하나는 기기 하나에서만 쓸 수 있어.</p><input id="gateIn" type="text" maxlength="12" placeholder="BIT-XXXXXX" autocomplete="off" autocapitalize="characters"><div class="msg" id="gateMsg"></div><button class="btn2" id="gateBtn" type="button">확인</button></div>
+  <div id="splash" class="layer"><img src="img/logo_full.webp" alt="빛이 있는 국어, 손유빈"><small>presents</small></div>
+  <div id="credits" class="layer" hidden><img src="img/logo_full.webp" alt="빛이 있는 국어, 손유빈"><span class="line"></span><p><em>일흔 번째 칸</em> — 성균관 백문백답</p><p>기획 · 대본 · 문항 · 해설<br><em>손유빈 (빛이 있는 국어)</em></p><p>교재 「중세국어 백문백답 70문 70답」</p><p>그림: AI 생성 이미지 · 글꼴: Noto Serif/Sans CJK KR</p><small>화면을 누르면 처음으로 돌아갑니다</small></div>
   <div id="title" class="layer">
     <div class="art"></div>
-    <span class="brand">빛이 있는 국어 · 손유빈</span>
+    <div class="brandrow"><img src="img/logo_mark.webp" alt=""><span class="brand">빛이 있는 국어, 손유빈</span></div>
     <span class="kicker">성균관 백문백답</span>
     <h1>일흔 번째 <em>칸</em></h1>
     <p>칸을 맞게 채우면 문이 열린다. 일흔 칸이 다 차면 문은 닫힌다.</p>
@@ -315,19 +317,26 @@ function gate() {
   });
 }
 /* ── 배경음악: 배경 그림에 따라 곡을 고른다 ── */
-const BGM_OF = { room_night: 'night', library: 'night', room_day: 'day', seogo_day: 'day', myeongnyun: 'day', dongjae: 'day', market: 'day', wall: 'day', tree: 'day', seogo_sunset: 'sunset', conv: 'modern', cafe: 'modern', street: 'modern', classroom: 'modern', gate: 'modern' };
+const BGM_OF = { room_night: 'modern', library: 'modern', room_day: 'modern', seogo_day: 'day', myeongnyun: 'day', dongjae: 'day', market: 'day', wall: 'day', tree: 'day', seogo_sunset: 'day', conv: 'modern', cafe: 'modern', street: 'modern', classroom: 'modern', gate: 'modern' };
 const bgm = { cur: null, el: {}, on: true, armed: false, want: null };
 function bgmLoad(n) { if (!bgm.el[n]) { const a = new Audio(AUD(n)); a.loop = true; a.preload = 'auto'; a.volume = 0; bgm.el[n] = a; } return bgm.el[n]; }
 function bgmFade(a, to, ms, stop) { const from = a.volume, t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / ms); a.volume = from + (to - from) * k; if (k < 1) requestAnimationFrame(step); else if (stop) { a.pause(); } }; step(); }
+const BGM_HOLD = 18000; // 한 곡을 최소 18초는 틀고 나서 바꾼다
 function bgmPlay(n) {
   bgm.want = n;
   if (!bgm.on || !bgm.armed || bgm.cur === n) return;
-  if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 900, true);
-  bgm.cur = n; if (!n) return;
-  const a = bgmLoad(n); a.currentTime = 0; a.volume = 0; a.play().catch(() => {}); bgmFade(a, 0.45, 1400);
+  const since = performance.now() - (bgm.at || 0);
+  if (bgm.cur && since < BGM_HOLD) { clearTimeout(bgm.timer); bgm.timer = setTimeout(() => { if (bgm.want !== bgm.cur) { const w = bgm.want; bgmSwitch(w); } }, BGM_HOLD - since); return; }
+  bgmSwitch(n);
 }
-function bgmArm() { bgm.armed = true; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} if (bgm.want) { const w = bgm.want; bgm.cur = null; bgmPlay(w); } }
-function bgmToggle() { bgm.on = !bgm.on; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} $('bgmBtn').classList.toggle('off', !bgm.on); $('mBgm').textContent = bgm.on ? '배경음악 끄기' : '배경음악 켜기'; if (!bgm.on) { if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 500, true); bgm.cur = null; } else { const w = bgm.want; bgm.cur = null; bgmPlay(w); } }
+function bgmSwitch(n) {
+  clearTimeout(bgm.timer);
+  if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 2600, true);
+  bgm.cur = n; bgm.at = performance.now(); if (!n) return;
+  const a = bgmLoad(n); a.volume = 0; a.play().catch(() => {}); bgmFade(a, 0.45, 3000); // 멈췄던 자리에서 이어서
+}
+function bgmArm() { bgm.armed = true; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} const w = bgm.want || 'modern'; bgm.cur = null; bgm.at = 0; bgmSwitch(w); }
+function bgmToggle() { bgm.on = !bgm.on; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} $('bgmBtn').classList.toggle('off', !bgm.on); $('mBgm').textContent = bgm.on ? '배경음악 끄기' : '배경음악 켜기'; if (!bgm.on) { clearTimeout(bgm.timer); if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 500, true); bgm.cur = null; } else { const w = bgm.want || 'modern'; bgm.cur = null; bgm.at = 0; bgmSwitch(w); } }
 const $ = id => document.getElementById(id);
 const SAVE_KEY = 'c70-save-v2';
 const SUS_MAX = 5;
@@ -350,7 +359,7 @@ function setBg(id, instant) {
   setTimeout(() => { a.style.backgroundImage = b.style.backgroundImage; b.style.opacity = 0; }, 650);
 }
 function setCg(id) {
-  st.cg = id; if (id === 'bench') bgmPlay('sunset');
+  st.cg = id; if (id === 'bench') bgmPlay('sunset'); if (id === 'tutoring') bgmPlay('modern');
   const c = $('cg');
   if (!id) { c.classList.remove('on'); return; }
   const u = `url(${IMG('cg_' + id)})`;
@@ -764,7 +773,7 @@ function boot(hot) {
   // 그림을 미리 불러 둔다.
   const names = new Set();
   D.S.map(s => s[0] === 'pk' ? s[2] : s).forEach(s => { if (s[0] === 'bg') names.add('bg_' + s[1]); if (s[0] === 'cg' && s[1]) names.add('cg_' + s[1]); if (s[0] === 'sp' && s[1]) names.add('sp_' + ((D.CH[s[1]] || {}).sp || s[1]) + '_' + (s[2] || 'base')); });
-  names.forEach(n => { const i = new Image(); i.src = IMG(n); });
+  names.add('logo_full'); names.add('logo_mark'); names.forEach(n => { const i = new Image(); i.src = IMG(n); });
 }
 // 홈 화면 앱(PWA) 꾸밈: 웹으로 열렸을 때만. 파일로 열면 건너뛴다.
 (function () {
