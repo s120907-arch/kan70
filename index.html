@@ -334,7 +334,14 @@ function gate() {
 const BGM_OF = { room_night: 'modern', library: 'modern', room_day: 'modern', seogo_day: 'day', myeongnyun: 'day', dongjae: 'day', market: 'day', wall: 'day', tree: 'day', seogo_sunset: 'day', conv: 'modern', cafe: 'modern', street: 'modern', classroom: 'modern', gate: 'modern' };
 const bgm = { cur: null, el: {}, on: true, armed: false, want: null };
 function bgmLoad(n) { if (!bgm.el[n]) { const a = new Audio(AUD(n)); a.loop = true; a.preload = 'auto'; a.volume = 0; bgm.el[n] = a; } return bgm.el[n]; }
-function bgmFade(a, to, ms, stop) { const from = a.volume, t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / ms); a.volume = from + (to - from) * k; if (k < 1) requestAnimationFrame(step); else if (stop) { a.pause(); } }; step(); }
+// 페이드: 같은 요소에 새 페이드가 걸리면 이전 것은 조용히 끝낸다(토큰). 끝나면 stop일 때 멈춘다.
+function bgmFade(a, to, ms, stop) {
+  const from = a.volume, t0 = performance.now(), tok = (a._fade = (a._fade || 0) + 1);
+  const step = () => { if (a._fade !== tok) return; const k = Math.min(1, (performance.now() - t0) / ms); a.volume = Math.max(0, Math.min(1, from + (to - from) * k)); if (k < 1) requestAnimationFrame(step); else if (stop) { a.pause(); } };
+  step();
+}
+// 지금 곡 말고 전부 끈다(겹침 방지의 마지막 안전장치).
+function bgmHush(keep, keep2) { Object.keys(bgm.el).forEach(n => { if (n !== keep && n !== keep2) { const a = bgm.el[n]; if (!a.paused) bgmFade(a, 0, 500, true); } }); }
 const BGM_HOLD = 18000; // 한 곡을 최소 18초는 틀고 나서 바꾼다
 function bgmPlay(n, force) {
   if (force) bgm.hold = false; else if (bgm.hold) { bgm.want = n; return; }
@@ -346,15 +353,20 @@ function bgmPlay(n, force) {
   bgmSwitch(n);
 }
 function bgmSwitch(n) {
-  clearTimeout(bgm.timer);
-  if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 2600, true);
-  bgm.cur = n; bgm.at = performance.now(); if (!n) return;
-  const a = bgmLoad(n); a.volume = 0; a.play().catch(() => {}); bgmFade(a, 0.45, 3000); // 멈췄던 자리에서 이어서
+  clearTimeout(bgm.timer); clearTimeout(bgm.inTimer);
+  const prev = bgm.cur;
+  bgm.cur = n; bgm.at = performance.now();
+  // 옛 곡은 1.2초에 내리고, 새 곡은 0.8초 뒤에 올리기 시작한다. 겹치는 구간을 짧게.
+  if (prev && prev !== n && bgm.el[prev]) bgmFade(bgm.el[prev], 0, 1200, true);
+  bgmHush(n, prev);
+  if (!n) return;
+  const start = () => { if (bgm.cur !== n || !bgm.on) return; const a = bgmLoad(n); if (a.paused) { a.volume = 0; a.play().catch(() => {}); } bgmFade(a, 0.45, 1800); };
+  if (prev && prev !== n) bgm.inTimer = setTimeout(start, 800); else start();
 }
 // 무음 큐: 지금 곡을 내리고, 다음 명시 큐까지 배경에 따른 자동 재생을 막는다.
-function bgmOff(ms) { bgm.hold = true; clearTimeout(bgm.timer); if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, ms || 700, true); bgm.cur = null; }
-function bgmArm() { bgm.armed = true; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} const w = bgm.want || 'modern'; bgm.cur = null; bgm.at = 0; bgmSwitch(w); }
-function bgmToggle() { bgm.on = !bgm.on; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} $('bgmBtn').classList.toggle('off', !bgm.on); $('mBgm').textContent = bgm.on ? '배경음악 끄기' : '배경음악 켜기'; if (!bgm.on) { clearTimeout(bgm.timer); if (bgm.cur && bgm.el[bgm.cur]) bgmFade(bgm.el[bgm.cur], 0, 500, true); bgm.cur = null; } else { const w = bgm.want || 'modern'; bgm.cur = null; bgm.at = 0; bgmSwitch(w); } }
+function bgmOff(ms) { bgm.hold = true; clearTimeout(bgm.timer); clearTimeout(bgm.inTimer); Object.values(bgm.el).forEach(a => { if (!a.paused) bgmFade(a, 0, ms || 700, true); }); bgm.cur = null; }
+function bgmArm() { bgm.armed = true; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} const w = bgm.want || 'modern'; if (bgm.cur === w && bgm.el[w] && !bgm.el[w].paused) return; bgmHush(null); bgm.cur = null; bgm.at = 0; bgmSwitch(w); }
+function bgmToggle() { bgm.on = !bgm.on; try { localStorage.setItem('c70-bgm', bgm.on ? '1' : '0'); } catch (e) {} $('bgmBtn').classList.toggle('off', !bgm.on); $('mBgm').textContent = bgm.on ? '배경음악 끄기' : '배경음악 켜기'; if (!bgm.on) { clearTimeout(bgm.timer); clearTimeout(bgm.inTimer); bgmHush(null); bgm.cur = null; } else { const w = bgm.want || 'modern'; bgm.cur = null; bgm.at = 0; bgmSwitch(w); } }
 const $ = id => document.getElementById(id);
 const SAVE_KEY = 'c70-save-v2';
 const SUS_MAX = 5;
