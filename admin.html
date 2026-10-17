@@ -151,8 +151,8 @@ let KEY = '', ROWS = [], open = new Set();
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmt(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; const p=n=>String(n).padStart(2,'0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 function fmtTime(s){ s=Number(s)||0; if(!s) return '—'; const m=Math.round(s/60); return m<60? m+'분' : Math.floor(m/60)+'시간 '+(m%60)+'분'; }
-function grade(c){ if(!c) return ''; if(c.g) return c.g; const s=c.best!=null?c.best:c.s; if(s==null) return ''; return s>=90?'장원':s>=70?'급제':'낙방'; }
-function gcls(g){ return g==='장원'?'g1':g==='급제'?'g2':g==='낙방'?'g3':''; }
+function grade(c){ if(!c) return ''; if(c.g) return c.g; const s=c.best!=null?c.best:c.s; if(s==null) return ''; return s>=90?'장원':s>=70?'급제':'재도전'; }
+function gcls(g){ return g==='장원'?'g1':g==='급제'?'g2':(g==='낙방'||g==='재도전')?'g3':''; }
 function state(r){ if(r.used) return 'live'; if(r.name) return 'given'; return 'none'; }
 
 async function api(params){
