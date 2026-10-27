@@ -131,7 +131,7 @@ tr.detail td{background:#f5efe0;white-space:normal;padding:12px 16px}
       <table>
         <thead><tr>
           <th>코드</th><th>이름</th><th>메모</th><th>상태</th><th>진도</th>
-          <th>1화</th><th>2화</th><th>3화</th><th>4화</th><th>5화</th><th>최종</th>
+          <th>1화</th><th>2화</th><th>3화</th><th>4화</th><th>5화</th><th>6화</th><th>7화</th><th>8화</th><th>최종</th><th>조교</th>
           <th>마지막 접속</th><th></th>
         </tr></thead>
         <tbody id="tb"></tbody>
@@ -143,8 +143,13 @@ tr.detail td{background:#f5efe0;white-space:normal;padding:12px 16px}
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbz4_MajMDM-APQqHY9xg3mu5QAwjS5f1YgdXcVYvIb307I_B0LsWte61vUoY0V5OmvGlA/exec';
-const CH = {1:'1화',2:'2화',3:'3화',4:'4화',5:'5화'};
+const CH = {1:'1화',2:'2화',3:'3화',4:'4화',5:'5화',6:'6화',7:'7화',8:'8화'};
 const WHO = {seomuk:'서묵',irang:'이랑',doha:'도하',taegyeom:'태겸',ijae:'이재'};
+const TAN = {seomuk:'서묵',irang:'이랑',doha:'도하',taegyeom:'태겸',ijae:'이재',seorin:'서린',hayul:'하율',jihyun:'지현'};
+const taGrade = s => s>=95?'장원':s>=85?'급제':'재도전';
+const SCH = {changhyeon:'창현고',sehwa:'세화여고',hwaseong:'화성고'};
+function taInfo(p,recs){ const T=p.ta||{}; const school=T.school||(recs[0]&&SCH[recs[0].school])||''; const ids=new Set(recs.map(c=>c.ta)); const total=T.total||(ids.size?[...ids].reduce((a,id)=>a+({seomuk:2,irang:2,doha:2,taegyeom:2,ijae:2,seorin:2,hayul:3,jihyun:4}[id]||0),0):0); return {school, done:T.done!=null?T.done:recs.length, total}; }
+function taRecs(ch){ return Object.keys(ch).filter(k=>k.startsWith('t_')).map(k=>ch[k]).filter(c=>c&&c.ta!=null).sort((a,b)=>(Object.keys(TAN).indexOf(a.ta)-Object.keys(TAN).indexOf(b.ta))||(a.k-b.k)); }
 const $ = s => document.querySelector(s);
 let KEY = '', ROWS = [], open = new Set();
 
@@ -204,34 +209,38 @@ function render(){
     cells.push(`<td class="memo" data-l="메모"><input data-f="memo" value="${esc(r.memo)}" placeholder="학교·반·연락 등"></td>`);
     cells.push(`<td data-l="상태"><span class="st ${st}">${st==='live'?'접속함':st==='given'?'배포됨':'미배포'}</span></td>`);
     cells.push(`<td data-l="진도">${esc(p.pos||(st==='live'?'시작':'—'))}</td>`);
-    for(let i=1;i<=5;i++){ const c=ch[i]; const g=grade(c); const s=c?(c.best!=null?c.best:c.s):null;
-      cells.push(`<td class="ch" data-l="${CH[i]}">${c?`<span class="gr ${gcls(g)}" title="${esc(g)}">${s!=null?s:'·'}</span>`:'<span class="gr">—</span>'}</td>`); }
-    const F = p.final;
-    cells.push(`<td class="ch" data-l="최종">${F?`<span class="gr ${F.pass?'g1':'g3'}">${esc(F.s)}${F.total?'/'+esc(F.total):''}</span>${F.pick?' <small>'+esc(F.pick)+'</small>':''}`:'<span class="gr">—</span>'}</td>`);
+    for(let i=1;i<=8;i++){ const c=ch[i], q=ch['q'+i]; const g=grade(c), gq=grade(q); const s=c?(c.best!=null?c.best:c.s):null, sq=q?(q.best!=null?q.best:q.s):null;
+      cells.push(`<td class="ch" data-l="${CH[i]}">${c?`<span class="gr ${gcls(g)}" title="스토리 · ${esc(g)}">${s!=null?s:'·'}</span>`:'<span class="gr">—</span>'}${q?` <span class="gr ${gcls(gq)}" title="문제만 · ${esc(gq)}" style="opacity:.75">문${sq!=null?sq:'·'}</span>`:''}</td>`); }
+    const F = p.final, FQ = ch.qf;
+    cells.push(`<td class="ch" data-l="최종">${F?`<span class="gr ${F.pass?'g1':'g3'}">${esc(F.s)}${F.total?'/'+esc(F.total):''}</span>${F.pick?' <small>'+esc(F.pick)+'</small>':''}`:'<span class="gr">—</span>'}${FQ?` <span class="gr ${FQ.pass?'g1':'g3'}" style="opacity:.75" title="문제만">문${esc(FQ.s)}${FQ.total?'/'+esc(FQ.total):''}</span>`:''}</td>`);
+    { const recs=taRecs(ch), T=taInfo(p,recs); const avg=recs.length?Math.round(recs.reduce((a,c)=>a+(c.best!=null?c.best:c.s),0)/recs.length):null;
+      cells.push(`<td class="ch" data-l="조교">${recs.length?`<span class="gr ${gcls(taGrade(avg))}" title="${esc(T&&T.school||'')} · ${recs.length}교시 평균">${avg}</span> <small>${esc(T.school.slice(0,2))} ${esc(T.done+'/'+T.total)}</small>`:'<span class="gr">—</span>'}</td>`); }
     cells.push(`<td data-l="접속">${fmt(r.last)}</td>`);
     cells.push(`<td data-l=""><div class="act"><button class="sm" data-a="toggle">${open.has(r.code)?'접기':'자세히'}</button><button class="sm" data-a="reset" ${r.used?'':'disabled'}>기기 초기화</button><button class="sm danger" data-a="remove">삭제</button></div></td>`);
     tr.innerHTML = cells.join('');
     tb.appendChild(tr);
     if(open.has(r.code)){
       const d = document.createElement('tr'); d.className='detail';
-      d.innerHTML = `<td colspan="13">${detail(r)}</td>`;
+      d.innerHTML = `<td colspan="17">${detail(r)}</td>`;
       tb.appendChild(d);
     }
   });
-  if(!rows.length) tb.innerHTML = '<tr><td colspan="13" style="color:var(--mute);text-align:center;padding:24px">해당하는 코드가 없어</td></tr>';
+  if(!rows.length) tb.innerHTML = '<tr><td colspan="17" style="color:var(--mute);text-align:center;padding:24px">해당하는 코드가 없어</td></tr>';
 }
 
 function detail(r){
   const p = r.prog || {}, ch = p.ch || {};
   const boxes = [];
   boxes.push(`<div class="dbox"><h4>접속</h4>처음 ${fmt(r.first)} · 마지막 ${fmt(r.last)}<br>플레이 ${p.plays||0}회 · ${fmtTime(p.time)}<br><span style="color:var(--mute)">기기 ${esc((r.device||'').slice(0,10))}${r.device?'…':'—'}</span></div>`);
-  for(let i=1;i<=5;i++){ const c=ch[i]; if(!c) continue; const g=grade(c);
-    boxes.push(`<div class="dbox"><h4>${CH[i]} <span class="gr ${gcls(g)}">${esc(g)||'·'}</span></h4>점수 ${c.s!=null?c.s:'—'}${c.best!=null&&c.best!==c.s?' (최고 '+c.best+')':''} · ${c.n||1}회${c.t?' · '+fmt(c.t):''}${c.w&&c.w.length?`<div>틀린 문항<div class="wr">${c.w.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:'<div style="color:var(--green)">실전 전부 정답</div>'}</div>`); }
+  for(const key of [1,2,3,4,5,6,7,8,'q1','q2','q3','q4','q5','q6','q7','q8']){ const c=ch[key]; if(!c) continue; const g=grade(c); const i=+String(key).replace('q',''); const tag=String(key)[0]==='q'?' · 문제만':' · 스토리';
+    boxes.push(`<div class="dbox"><h4>${CH[i]}${tag} <span class="gr ${gcls(g)}">${esc(g)||'·'}</span></h4>점수 ${c.s!=null?c.s:'—'}${c.best!=null&&c.best!==c.s?' (최고 '+c.best+')':''} · ${c.n||1}회${c.t?' · '+fmt(c.t):''}${c.w&&c.w.length?`<div>틀린 문항<div class="wr">${c.w.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:'<div style="color:var(--green)">실전 전부 정답</div>'}</div>`); }
+  { const recs=taRecs(ch); if(recs.length){ const T=taInfo(p,recs); boxes.push(`<div class="dbox"><h4>조교 모드${T.school?' · '+esc(T.school):''} <span class="gr">${esc(T.done+'/'+T.total+'교시')}</span></h4>${recs.map(c=>{const g=c.g||taGrade(c.best!=null?c.best:c.s); return `<div style="margin:3px 0">${esc(TAN[c.ta]||c.ta)} · ${esc(c.title||('교시 '+(c.k+1)))} <span class="gr ${gcls(g)}">${c.best!=null?c.best:c.s}</span>${c.n>1?' · '+c.n+'회':''}${c.h?' · 힌트 '+c.h:''}${c.w&&c.w.length?` <span style="color:var(--mute)">오답 ${c.w.map(x=>+x>3000?'맞'+(+x-3000):+x>2000?'현'+(+x-2000):+x>1000?String(+x-1000):+x>100?'최'+(+x-100):x).join(' ')}</span>`:''}</div>`;}).join('')}</div>`); } }
   if(p.aff){ boxes.push(`<div class="dbox"><h4>호감도</h4>${Object.keys(WHO).filter(k=>p.aff[k]!=null).map(k=>`${WHO[k]} ${p.aff[k]}<div class="ratebar"><i style="width:${Math.max(0,Math.min(100,p.aff[k]))}%;background:${p.aff[k]>=80?'var(--red)':'var(--gold)'}"></i></div>`).join('')}</div>`); }
-  if(p.miss && Object.keys(p.miss).length){ const ks=Object.keys(p.miss).sort((a,b)=>+a-+b); boxes.push(`<div class="dbox"><h4>오답 노트 (틀린 횟수)</h4><div class="wr">${ks.map(k=>`<span>${esc(+k>100?'최종'+(+k-100):k)}번 ×${esc(p.miss[k])}</span>`).join('')}</div></div>`); }
+  if(p.miss && Object.keys(p.miss).length){ const ks=Object.keys(p.miss).sort((a,b)=>+a-+b); boxes.push(`<div class="dbox"><h4>오답 노트 (틀린 횟수)</h4><div class="wr">${ks.map(k=>`<span>${esc(+k>2000?'현대'+(+k-2000):+k>1000?String(+k-1000):+k>100?'최종'+(+k-100):k)}번 ×${esc(p.miss[k])}</span>`).join('')}</div></div>`); }
   if(p.suspect && p.suspect.length){ boxes.push(`<div class="dbox"><h4>의심 스테이지</h4>${p.suspect.map(s=>`${WHO[s.who]||s.who} 화 · ${s.got}/${s.n} · ${s.ok?'통과':'실패(-10)'}`).join('<br>')}</div>`); }
   if(p.rate){ boxes.push(`<div class="dbox"><h4>인물별 암기율</h4>${Object.keys(WHO).filter(k=>p.rate[k]!=null).map(k=>{const v=Math.round((p.rate[k]<=1?p.rate[k]*100:p.rate[k]));return `${WHO[k]} ${v}%<div class="ratebar"><i style="width:${v}%"></i></div>`;}).join('')}</div>`); }
-  if(p.final){ const F=p.final; boxes.push(`<div class="dbox"><h4>최종 시험</h4>${esc(F.s)}${F.total?' / '+esc(F.total):''} · ${F.pass?'통과':'미달'}${F.pick?' · 배웅: '+esc(F.pick):''}${F.t?'<br>'+fmt(F.t):''}${F.w&&F.w.length?`<div>틀린 문항<div class="wr">${F.w.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:''}</div>`); }
+  if(ch.qf){ const F=ch.qf; boxes.push(`<div class="dbox"><h4>최종 시험 · 문제만</h4>${esc(F.s)}${F.total?' / '+esc(F.total):''} · ${F.pass?'통과':'미달'}${F.pick?' · 배웅: '+esc(F.pick):''}${F.t?'<br>'+fmt(F.t):''}${F.w&&F.w.length?`<div>틀린 문항<div class="wr">${F.w.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:''}</div>`); }
+  if(p.final){ const F=p.final; boxes.push(`<div class="dbox"><h4>최종 시험 · 스토리</h4>${esc(F.s)}${F.total?' / '+esc(F.total):''} · ${F.pass?'통과':'미달'}${F.pick?' · 배웅: '+esc(F.pick):''}${F.t?'<br>'+fmt(F.t):''}${F.w&&F.w.length?`<div>틀린 문항<div class="wr">${F.w.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:''}</div>`); }
   if(!Object.keys(ch).length && !p.final) boxes.push(`<div class="dbox" style="color:var(--mute)">아직 플레이 기록이 없어. 화를 하나 끝내면 여기에 쌓여.</div>`);
   return `<div class="dgrid">${boxes.join('')}</div>`;
 }
@@ -273,11 +282,11 @@ $('#q').addEventListener('input', render);
 $('#filter').addEventListener('change', render);
 $('#logout').addEventListener('click', () => { localStorage.removeItem('c70-adm'); location.reload(); });
 $('#csv').addEventListener('click', () => {
-  const head = ['코드','이름','메모','상태','진도','1화','1화 등급','1화 틀린 문항','2화','2화 등급','2화 틀린 문항','3화','3화 등급','3화 틀린 문항','4화','4화 등급','4화 틀린 문항','5화','5화 등급','5화 틀린 문항','최종 점수','최종 통과','배웅','플레이 횟수','플레이 시간(분)','처음 접속','마지막 접속'];
+  const head = ['코드','이름','메모','상태','진도','1화','1화 등급','1화 틀린 문항','2화','2화 등급','2화 틀린 문항','3화','3화 등급','3화 틀린 문항','4화','4화 등급','4화 틀린 문항','5화','5화 등급','5화 틀린 문항','6화','6화 등급','6화 틀린 문항','7화','7화 등급','7화 틀린 문항','8화','8화 등급','8화 틀린 문항','최종 점수','최종 통과','배웅','플레이 횟수','플레이 시간(분)','처음 접속','마지막 접속'];
   const lines = [head];
   ROWS.forEach(r => { const p=r.prog||{}, ch=p.ch||{}; const st=state(r);
     const row = [r.code, r.name||'', r.memo||'', st==='live'?'접속함':st==='given'?'배포됨':'미배포', p.pos||''];
-    for(let i=1;i<=5;i++){ const c=ch[i]; row.push(c&&c.s!=null?c.s:'', grade(c), c&&c.w?c.w.join(' '):''); }
+    for(let i=1;i<=8;i++){ const c=ch[i]; row.push(c&&c.s!=null?c.s:'', grade(c), c&&c.w?c.w.join(' '):''); }
     const F=p.final||{}; row.push(F.s!=null?F.s:'', F.s!=null?(F.pass?'통과':'미달'):'', F.pick||'', p.plays||'', p.time?Math.round(p.time/60):'', r.first||'', r.last||'');
     lines.push(row); });
   const csv = '﻿' + lines.map(l => l.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
