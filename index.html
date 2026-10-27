@@ -413,7 +413,7 @@ const D = {"Q":{"1":{"topic":"이어쓰기(연서)","expl":"초성자 두 개를
 const IMG = n => 'img/' + n + '.webp';
 const AUD = n => 'bgm/' + n + '.mp3';
 /* ── 접속 코드 (API가 비어 있으면 묻지 않는다) ── */
-const API = "";
+const API = "https://script.google.com/macros/s/AKfycbz4_MajMDM-APQqHY9xg3mu5QAwjS5f1YgdXcVYvIb307I_B0LsWte61vUoY0V5OmvGlA/exec";
 function devId() { try { let d = localStorage.getItem('c70-dev'); if (!d) { d = 'd' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('c70-dev', d); } return d; } catch (e) { return 'd-nostorage'; } }
 function keyGet() { try { return JSON.parse(localStorage.getItem('c70-key') || 'null'); } catch (e) { return null; } }
 async function verify(code) { const u = API + (API.includes('?') ? '&' : '?') + 'code=' + encodeURIComponent(code) + '&device=' + encodeURIComponent(devId()); const r = await fetch(u, { method: 'GET', redirect: 'follow' }); return r.json(); }
